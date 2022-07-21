@@ -1,0 +1,288 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+model User {
+  id             String @id @default(cuid())
+  email          String
+  username       String
+  country        String
+  password       String
+  profile_img    String @default("https://res.cloudinary.com/dizyob2oz/image/upload/v1636463581/profile_img.png")
+  profile_img_id String @default("profile_img")
+  balance        Float  @default(0)
+  role           Role   @default(User)
+
+  suspend  Boolean @default(false)
+  verified Boolean @default(false)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  channel         Channel[]
+  view            View[]
+  subscribe       Subscribe[]
+  rentedVideos    RentedVideos[]
+  purchasedVideos PurchasedVideos[]
+  report          Reports[]
+  User            TransactionLog[]  @relation("user")
+  Reciever        TransactionLog[]  @relation("reciever")
+  like            Like[]
+  dislike         Dislike[]
+
+  @@unique([username, email])
+  @@index([id, email])
+}
+
+model Channel {
+  id             String  @id @default(cuid())
+  name           String
+  description    String?
+  cover_img      String  @default("https://res.cloudinary.com/dizyob2oz/image/upload/q_10/v1635426295/cover_image.jpg")
+  cover_img_id   String  @default("cover_image")
+  channel_img    String  @default("https://res.cloudinary.com/dizyob2oz/image/upload/q_50/v1635425995/channel_img.jpg")
+  channel_img_id String  @default("channel_img")
+  userId         String
+  suspend        Boolean @default(false)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video     Video[]
+  view      View[]
+  subscribe Subscribe[]
+
+  playlist playlist[]
+
+  @@unique([name])
+  @@index([id])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  Video       Video[]
+
+  @@unique([name])
+  @@index([id, name])
+}
+
+model Video {
+  id           String  @id @default(cuid())
+  title        String
+  description  String?
+  thumbnailUrl String  @default("https://res.cloudinary.com/dizyob2oz/image/upload/q_50/v1635425995/channel_img.jpg")
+  videoUrl     String
+  thumbnailId  String  @default("channel_img")
+  videoId      String
+  channelid    String
+  price        Float   @default(0)
+  rent_price   Float   @default(0)
+  categoryid   String
+  free         Boolean @default(false)
+  isPublish    Boolean @default(true)
+  playlistId   String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  category        Category?         @relation(fields: [categoryid], references: [id], onDelete: Restrict)
+  channel         Channel           @relation(fields: [channelid], references: [id], onDelete: Cascade)
+  view            View[]
+  purchasedVideos PurchasedVideos[]
+  rentedVideos    RentedVideos[]
+  payment         TransactionLog[]
+  report          Reports[]
+  playlist        playlist?         @relation(fields: [playlistId], references: [id])
+  like            Like[]
+  dislike         Dislike[]
+
+  @@index([id])
+}
+
+model playlist {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  channelId    String
+  thumbnailId  String   @default("channel_img")
+  thumbnailUrl String   @default("https://res.cloudinary.com/dizyob2oz/image/upload/q_50/v1635425995/channel_img.jpg")
+  createdAt    DateTime @default(now())
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  Video   Video[]
+
+  @@index([id, name])
+}
+
+model PurchasedVideos {
+  id      String @id @default(cuid())
+  videoid String
+  userid  String
+
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userid], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoid], references: [id], onDelete: Cascade)
+
+  @@index([id])
+}
+
+model RentedVideos {
+  id       String   @id @default(cuid())
+  duration DateTime @db.Timestamp
+  videoid  String
+  userid   String
+
+  createdAt DateTime @default(now())
+
+  video Video @relation(fields: [videoid], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userid], references: [id], onDelete: Cascade)
+
+  @@index([id])
+}
+
+model Reports {
+  id      String  @id @default(cuid())
+  videoid String
+  userid  String
+  content String? // optional text why user is flagging the video
+
+  user  User  @relation(fields: [userid], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoid], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model TransactionLog {
+  id         String            @id @default(cuid())
+  videoid    String
+  userid     String
+  recieverid String
+  reference  String
+  type       TransactionType
+  status     TransactionStatus
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  user     User   @relation("user", references: [id], fields: [userid], onDelete: Cascade)
+  reciever User?  @relation("reciever", references: [id], fields: [recieverid], onDelete: Cascade)
+  video    Video? @relation(references: [id], fields: [videoid], onDelete: Cascade)
+}
+
+model Subscribe {
+  id        String @id @default(cuid())
+  userid    String
+  channelid String
+
+  createdAt DateTime @default(now())
+
+  user    User    @relation(references: [id], fields: [userid], onDelete: Cascade)
+  channel Channel @relation(references: [id], fields: [channelid], onDelete: Cascade)
+
+  @@index([id])
+}
+
+model View {
+  id        String @id @default(cuid())
+  userid    String
+  videoid   String
+  channelid String
+
+  createdAt DateTime @default(now())
+
+  user    User    @relation(references: [id], fields: [userid], onDelete: Cascade)
+  video   Video   @relation(references: [id], fields: [videoid], onDelete: Cascade)
+  channel Channel @relation(references: [id], fields: [channelid], onDelete: Cascade)
+
+  @@index([id])
+}
+
+model Like {
+  id      String @id @default(cuid())
+  userid  String
+  videoid String
+  video   Video  @relation(fields: [videoid], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userid], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Dislike {
+  id      String @id @default(cuid())
+  userid  String
+  videoid String
+  video   Video  @relation(fields: [videoid], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userid], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+// this is the app global settings record
+model Meta {
+  id String @id @default(cuid())
+}
+
+// the terms and condition section
+model Tos {
+  id      String @id @default(cuid())
+  content String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+// the policy section
+model Policy {
+  id      String @id @default(cuid())
+  content String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+enum Role {
+  Super
+  User
+  Mod
+  Admin
+}
+
+enum TransactionType {
+  Rent
+  Purchase
+  TopUp
+  Withdraw
+  Recieved
+  Transfered
+  Voucher
+}
+
+enum TransactionStatus {
+  Success
+  Pending
+  Failed
+}
