@@ -249,7 +249,7 @@ model Meta {
 // the terms and condition section
 model Tos {
   id      String @id @default(cuid())
-  content String
+  content String @db.LongText
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
@@ -258,7 +258,7 @@ model Tos {
 // the policy section
 model Policy {
   id      String @id @default(cuid())
-  content String
+  content String @db.LongText
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
