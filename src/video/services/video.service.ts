@@ -19,6 +19,7 @@ export class VideoService {
     return this.prismaService.video.findMany({
       where: { isPublish: true },
       include: { category: true, channel: true, _count: true },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -29,7 +30,7 @@ export class VideoService {
     });
   }
 
-  async findVideoById(id: string, userid: string): Promise<Video> {
+  async findVideoById(id: string, userid: string): Promise<any> {
     const video = await this.prismaService.video.findUnique({
       where: { id },
       include: {
@@ -46,9 +47,17 @@ export class VideoService {
       channelid: video.channelid,
     });
 
+    const userLiked = await this.prismaService.like.findFirst({
+      where: { userid, videoid: id },
+    });
+
+    const userDisliked = await this.prismaService.dislike.findFirst({
+      where: { userid, videoid: id },
+    });
+
     video._count.view = views.views;
 
-    return video;
+    return { ...video, liked: !!userLiked, disliked: !!userDisliked };
   }
 
   // adding views to video

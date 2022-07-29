@@ -8,6 +8,7 @@ import { VideoActionService } from '../services/video-actions.service';
 @ApiTags('Video Action')
 export class VideoActionController {
   constructor(private readonly actionService: VideoActionService) {}
+
   // this route is responsible for liking a video
   @UseGuards(JwtAuthGuard)
   @Post('like')
