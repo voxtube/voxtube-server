@@ -14,6 +14,7 @@ export class HistoryService {
       include: {
         video: {
           include: {
+            category: true,
             _count: true,
           },
         },
