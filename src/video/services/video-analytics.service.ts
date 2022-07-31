@@ -23,6 +23,7 @@ export class VideoAnalyticsService {
         },
       },
       where: { isPublish: true },
+      include: { category: true, channel: true, _count: true },
       take: 20,
     });
   }
@@ -31,6 +32,7 @@ export class VideoAnalyticsService {
       orderBy: { createdAt: 'desc' },
       where: { isPublish: true },
       take: 20,
+      include: { category: true, channel: true, _count: true },
     });
   }
   playlist() {
@@ -40,6 +42,7 @@ export class VideoAnalyticsService {
   freeVideos() {
     return this.prismaService.video.findMany({
       where: { isPublish: true, free: true },
+      include: { category: true, channel: true, _count: true },
       take: 20,
     });
   }
