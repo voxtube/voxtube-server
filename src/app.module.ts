@@ -2,15 +2,16 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { ChannelModule } from './channel/channel.module';
 import { CategoryModule } from './category/category.module';
-import { VideoModule } from './video/video.module';
+import { ChannelModule } from './channel/channel.module';
+import { HistoryModule } from './history/history.module';
 import { MetaModule } from './meta/meta.module';
+import { PlaylistModule } from './playlist/playlist.module';
 import { ReportsModule } from './reports/reports.module';
 import { TransactionlogModule } from './transactionlog/transactionlog.module';
-import { PlaylistModule } from './playlist/playlist.module';
+import { UsersModule } from './users/users.module';
+import { VideoModule } from './video/video.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PlaylistModule } from './playlist/playlist.module';
     ReportsModule,
     TransactionlogModule,
     PlaylistModule,
+    HistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
